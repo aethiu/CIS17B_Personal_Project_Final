@@ -1,0 +1,24 @@
+name: cis17b_connect4_final
+
+services:
+  web:
+    image: php:8.3.7-apache
+    ports:
+      - 80:80
+    volumes:
+      - ./:/var/www/html
+
+  db:
+    image: mariadb
+    ports:
+      - 3306:3306
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: 1
+      MARIADB_DATABASE: "catalog"
+      MARIADB_USER: "admin"
+      MARIADB_PASSWORD: "password"
+
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
