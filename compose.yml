@@ -1,12 +1,13 @@
-name: cis17b_connect4_final
+name: cis17b_shopping_cart_final
 
 services:
-  web:
-    image: php:8.3.7-apache
+  app:
+    build: .
     ports:
       - 80:80
     volumes:
       - ./:/var/www/html
+    network_mode: host
 
   db:
     image: mariadb
