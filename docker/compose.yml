@@ -6,7 +6,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./:/var/www/html
+      - ../:/var/www/html
     network_mode: host
 
   db:
@@ -18,8 +18,13 @@ services:
       MARIADB_DATABASE: "catalog"
       MARIADB_USER: "admin"
       MARIADB_PASSWORD: "password"
+    volumes:
+      - db:/var/lib/mysql:Z
 
   adminer:
     image: adminer
     ports:
       - 8080:8080
+
+volumes:
+  db:
