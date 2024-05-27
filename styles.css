@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+    display: flex;
+    flex-direction:column;
+}
+
+nav {
+    display: flex;
+    width: 100vw;
+    flex-direction: row;
+    justify-content: flex-end;
+    background-color: lightblue;
+}
+
+.items {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    flex-basis: min-content;
+}
+
+.item_card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
+
+    padding: 10px;
+    margin: 10px;
+}
+
+.item_image_placeholder {
+    background-color: slategray;
+    width: 256px;
+    height: 256px;
+}
+
+.add_to_cart_btn {
+    width: 100%;
+}
