@@ -5,4 +5,5 @@ class Item {
     public $quantity;
     public $name;
     public $description;
+    const table = "entity_item";
 }

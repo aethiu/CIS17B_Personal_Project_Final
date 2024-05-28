@@ -5,3 +5,5 @@ function Item(sku=0, price=0.0, quantity=0, name="", description="") {
     this.name = name;
     this.description = description;
 }
+
+Item.prototype.api_uri = "model/api/items.php";
