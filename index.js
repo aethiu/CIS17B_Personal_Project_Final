@@ -10,12 +10,18 @@ async function getItems() {
 }
 
 function ItemCard({item}) {
+    const handle_add_to_cart = () => {
+        if (item) {
+            controller.add_to_cart(item);
+        }
+    };
+
     return (
         <div className="item_card">
             <div className="item_image_placeholder"></div>
             <div className="price">Price: ${item && item.price}</div>
             <div className="stock">Stock: {item && item.quantity}</div>
-            <button className="add_to_cart_btn">Add to Card</button>
+            <button className="add_to_cart_btn" disabled={!(item && item.quantity != 0)} onClick={handle_add_to_cart}>Add to Card</button>
         </div>
     );
 }
