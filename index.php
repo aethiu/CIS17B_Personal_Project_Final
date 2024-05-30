@@ -9,20 +9,12 @@
         <script type="text/babel" src="Item.js"></script>
         <script type="text/babel" src="Cart.js"></script>
         <script type="text/babel" src="Controller.js"></script>
+        <script type="text/babel" data-presets="react" src="components/Navigation.js"></script>
         <script type="text/babel" data-presets="react" src="index.js"></script>
         <meta charset="UTF-8">
         <title>Catalog</title>
     </head>
     <body>
-        <header>
-            <nav>
-                <a class="logo">CATALOG</a> <a>Sign Up</a> <a>Login</a> <a href="cart.php">Cart</a>
-            </nav>
-        </header>
-        <main>
-            <div id="items_container"></div>
-        </main>
-        <footer>
-        </footer>
+        <div id="root"></div>
     </body>
 </html>

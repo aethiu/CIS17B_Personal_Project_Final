@@ -35,5 +35,8 @@ function CartItemList({cart}) {
 }
 
 root.render(
-    <CartItemList cart={controller.cart}></CartItemList>
+    <>
+        <Navigation />
+        <CartItemList cart={controller.cart}></CartItemList>
+    </>
 );

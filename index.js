@@ -1,5 +1,5 @@
 const controller = new Controller();
-const root = ReactDOM.createRoot(document.getElementById("items_container"));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 function ItemCard({item}) {
     const handle_add_to_cart = () => {
@@ -42,6 +42,10 @@ function ItemList() {
         <div className="items">{items}</div>
     );
 }
+
 root.render(
-    <ItemList />
+    <>
+        <Navigation />
+        <ItemList />
+    </>
 );
