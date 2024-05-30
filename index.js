@@ -1,13 +1,5 @@
-async function getItem(sku) {
-    const response = await fetch(Item.prototype.api_uri+sku);
-    const items = await response.json();
-    return items && items[0];
-}
-
-async function getItems() {
-    const response = await fetch(Item.prototype.api_uri);
-    return await response.json();
-}
+const controller = new Controller();
+const root = ReactDOM.createRoot(document.getElementById("items_container"));
 
 function ItemCard({item}) {
     const handle_add_to_cart = () => {
@@ -19,6 +11,7 @@ function ItemCard({item}) {
     return (
         <div className="item_card">
             <div className="item_image_placeholder"></div>
+            <div className="item_name">{item ? item.name : "Loading..."}</div>
             <div className="price">Price: ${item && item.price}</div>
             <div className="stock">Stock: {item && item.quantity}</div>
             <button className="add_to_cart_btn" disabled={!(item && item.quantity != 0)} onClick={handle_add_to_cart}>Add to Card</button>
@@ -49,8 +42,6 @@ function ItemList() {
         <div className="items">{items}</div>
     );
 }
-
-const root = ReactDOM.createRoot(document.getElementById("items_container"));
 root.render(
     <ItemList />
 );

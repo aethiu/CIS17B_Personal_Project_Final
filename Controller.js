@@ -11,5 +11,3 @@ Controller.prototype.add_to_cart = function (item) {
 Controller.prototype.clear_items = function () {
     this.cart.items.clear();
 }
-
-const controller = new Controller();
