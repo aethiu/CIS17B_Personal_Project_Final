@@ -2,6 +2,7 @@
 require_once("../User.php");
 require_once('../../dbconnect.php');
 
+
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "POST": {
         break;
@@ -13,11 +14,7 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             $sql .= ' WHERE username="'.$_GET["username"].'"';
         }
         $sql .= ";";
-        $statement = $conn->prepare($sql);
-        $statement->setFetchMode(PDO::FETCH_CLASS, "User");
-        $statement->execute();
-
-        echo json_encode($statement->fetchAll());
+        echo json_encode(fetchClass($conn, $sql, "User"));
         break;
     }
 }

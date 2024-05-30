@@ -16,7 +16,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif (!password_verify(htmlspecialchars($_POST["password"]), $user->passhash)) {
         $error = "Incorrect password.";
     } else {
-        setcookie("user_id", $user->id);
+        session_start();
+        $_SESSION["user_id"] = $user;
+        if ($user->admin) {
+            setcookie("admin", "true");
+        }
+        setcookie("username", $user->username);
         setcookie("logged_in", "true");
     }
 } 
