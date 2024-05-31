@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         session_start();
         $_SESSION["user_id"] = $user;
         if ($user->admin) {
-            setcookie("admin", "true");
+            setcookie("admin", "true"); // Tells the UI to a display link to the Admin Panel
         }
         setcookie("username", $user->username);
         setcookie("logged_in", "true");
@@ -28,6 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 if (isset($_COOKIE["logged_in"]) && $_COOKIE["logged_in"] == "true") {
     header('Location: index.php');
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +46,7 @@ if (isset($_COOKIE["logged_in"]) && $_COOKIE["logged_in"] == "true") {
         <meta charset="UTF-8">
         <title>Login</title>
     </head>
-    <bodY>
+    <body>
         <nav id="nav"></nav>
         <span style="color:red"><?php echo $error ?></span>
         <form method="post">
@@ -60,5 +61,5 @@ if (isset($_COOKIE["logged_in"]) && $_COOKIE["logged_in"] == "true") {
             <br/>
             <button>Login</button>
         </form>
-    </bodY>
+    </body>
 </html>
