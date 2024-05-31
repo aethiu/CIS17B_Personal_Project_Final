@@ -88,7 +88,6 @@ root.render(
 <h3>Users</h3>
 <FetchTable uri="model/api/users.php" />
 <h3>Items</h3>
-<FetchTable uri="model/api/items.php" onEdit={()=>{}}/>
-
+<FetchTable uri="model/api/items.php" />
 </>
 );
