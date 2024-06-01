@@ -2,7 +2,10 @@
 require_once("model/User.php");
 require_once("dbconnect.php");
 
+session_start();
+
 $error = "";
+$logged_in = false; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $statement = $conn->prepare('SELECT * FROM '.User::table.' WHERE username="'.htmlspecialchars($_POST["username"]).'"');
@@ -16,20 +19,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif (!password_verify(htmlspecialchars($_POST["password"]), $user->passhash)) {
         $error = "Incorrect password.";
     } else {
-        session_start();
-        $_SESSION["user_id"] = $user;
+        $logged_in = true;
+        $_SESSION["user_id"] = $user->id;
         if ($user->admin) {
-            setcookie("admin", "true");
+            setcookie("admin", "1"); // Tells the UI to display a link to the Admin Panel
         }
         setcookie("username", $user->username);
-        setcookie("logged_in", "true");
+        setcookie("logged_in", "1");
     }
 } 
-if (isset($_COOKIE["logged_in"]) && $_COOKIE["logged_in"] == "true") {
+// Logged in cookie isn't visible until page reload
+if ($logged_in == true OR isset($_COOKIE["logged_in"]) && $_COOKIE["logged_in"] == "1") {
     header('Location: index.php');
 }
-?>
 
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -45,20 +49,20 @@ if (isset($_COOKIE["logged_in"]) && $_COOKIE["logged_in"] == "true") {
         <meta charset="UTF-8">
         <title>Login</title>
     </head>
-    <bodY>
+    <body>
         <nav id="nav"></nav>
         <span style="color:red"><?php echo $error ?></span>
         <form method="post">
             <label for="username">Username</label>
             <input type="text" name="username" min=3 max=32 required></input>
             <br/>
-            <label for="email">E-Mail</label>
-            <input type="email" name="email" required></input>
+            <!-- <label for="email">E-Mail</label>
+            <input type="email" name="email" required></input> -->
             <br/>
             <label for="password">Password</label>
             <input type="password" name="password" min=8 max=64 required></input>
             <br/>
             <button>Login</button>
         </form>
-    </bodY>
+    </body>
 </html>

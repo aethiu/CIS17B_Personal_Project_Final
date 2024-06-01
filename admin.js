@@ -1,3 +1,6 @@
+const root = ReactDOM.createRoot(document.getElementById("root"));
+const controller = new Controller();
+
 function handleEditClick(tableId, rowId, uri="") {
     const dialog = document.querySelector(".edit_dialog");
     const editForm = document.querySelector(".edit_form");
