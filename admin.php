@@ -45,13 +45,13 @@ if (isset($_SESSION['user_id']) && is_admin($conn, $_SESSION['user_id'])) {
         <script type="text/babel" src="Cart.js"></script>
         <script type="text/babel" src="Controller.js"></script>
         <script type="text/babel" data-presets="react" src="components/Navigation.js"></script>
-        <script type="text/babel" data-presets="react"></script>
-        <script src="admin.js"></script>
+        <script type="text/babel" data-presets="react" src="admin.js"></script>
         <meta charset="UTF-8">
         <title>Admin Panel</title>
     </head>
     <body>
         <nav id="nav"></nav>
+        <div id="root"></div>
 
         <h2>Items</h2>
         <table id="item_table">
