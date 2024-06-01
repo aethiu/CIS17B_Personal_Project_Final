@@ -5,6 +5,9 @@ require_once('../../dbconnect.php');
 
 switch ($_SERVER["REQUEST_METHOD"]) {
     case "POST": {
+        foreach ($_POST as $key => $val) {
+            echo "$key\t$val<br/>";
+        }
         break;
     }
 
