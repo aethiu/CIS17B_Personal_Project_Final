@@ -16,6 +16,7 @@ if (isset($_SESSION['user_id']) && is_admin($conn, $_SESSION['user_id'])) {
     $authorized = true;
 } else {
     http_response_code(401);
+    header("Location: index.php");
 }
 
 ?>
@@ -24,15 +25,15 @@ if (isset($_SESSION['user_id']) && is_admin($conn, $_SESSION['user_id'])) {
     <head>
         <link rel="stylesheet" href="styles.css" />
         <style>
-            .edit_form {
+            form {
                 display: flex;
                 flex-direction: column;
                 align-content: space-between;
             }
-            .edit_form > * {
+            form > * {
                 margin: 5px;
             }
-            .edit_input {
+            input {
                 display: flex;
                 justify-content: space-between;
             }
@@ -44,32 +45,14 @@ if (isset($_SESSION['user_id']) && is_admin($conn, $_SESSION['user_id'])) {
         <script type="text/babel" src="Cart.js"></script>
         <script type="text/babel" src="Controller.js"></script>
         <script type="text/babel" data-presets="react" src="components/Navigation.js"></script>
-        <script type="text/babel" data-presets="react">
-            ReactDOM.createRoot(document.getElementById("nav")).render(<Navigation />);
-        </script>
+        <script type="text/babel" data-presets="react"></script>
         <script src="admin.js"></script>
-<?php 
-if ($authorized) {
-    echo "<script type='text/babel' data-presets='react' src='admin.js'></script>";
-} else {
-    // Only render the navigation bar
-    echo "
-    <script type='text/babel' data-presets='react'>
-    ReactDOM.createRoot(document.getElementById('root')).render(
-        <>
-        <Navigation />
-        <h1>Unauthorized</h1>
-        </>
-    );
-    </script>
-    ";
-}
-?>
         <meta charset="UTF-8">
         <title>Admin Panel</title>
     </head>
     <body>
         <nav id="nav"></nav>
+
         <h2>Items</h2>
         <table id="item_table">
             <tr>
@@ -87,20 +70,27 @@ if ($authorized) {
                     <td>".$item->quantity."</td>
                     <td>".$item->name."</td>
                     <td>".$item->description."</td>
-                    <td>$".$item->price."</td>
-                    <td><button onclick=\"handleEditClick('item_table', 'item_$item->sku', 'model/api/items.php')\">Edit</button></td>
+                    <td>".$item->price."</td>
+                    <td>
+                        <div>
+                            <button onclick=\"handleEditClick('item_table', 'item_$item->sku', 'model/api/items.php?sku=$item->sku')\">Edit</button>
+                            <button onclick=\"handleDeleteClick('model/api/items.php?sku=$item->sku')\">Delete</button>
+                        </div>
+                    </td>
                     </tr>";
                 }
             ?>
         </table>
+
         <h2>Users</h2>
+        <button type="button" onclick="document.getElementById('add_user_dialog').showModal()">Add User</button>
         <table id="user_table">
             <tr>
                 <td id="user_id">ID</td>
                 <td id="user_username">Username</td>
                 <td id="user_passhash">Password Hash</td>
                 <td id="user_admin">Is Admin?</td>
-                <td id="user_edit">Edit</td>
+                <td id="user_actions">Actions</td>
             </tr>
             <?php
                 foreach (fetchClass($conn, "SELECT * FROM ".User::table, "User") as $user) {
@@ -110,24 +100,37 @@ if ($authorized) {
                     <td>".$user->passhash."</td>
                     <td>".$user->admin."</td>
                     <td>
-                        <button onclick=\"handleEditClick('user_table','user_$user->id', 'model/api/users.php')\">Edit</button>
+                        <div>
+                            <button onclick=\"handleEditClick('user_table','user_$user->id', 'model/api/users.php?id=$user->id')\">Edit</button>
+                            <button onclick=\"handleDeleteClick('model/api/users.php?id=$user->id')\">Delete</button>
+                        </div>
                     </td>
                     </tr>";
                 }
             ?>
         </table>
 
-        <dialog class="edit_dialog">
-            <form class="edit_form" method="dialog" action="/model/api/users.php">
-                <label for="username">Username</label>
-                <input name="username"></input>
-                <label for="passhash">Password Hash</label>
-                <input name="passhash"></input>
-                <label for="admin">Admin?</label>
-                <input name="admin" type="checkbox"></input>
-                <button onclick="async () => handleUserEditSubmit(this)">Submit</button>
-                <button >Cancle</button>
-            </form>
+        <dialog id="edit_dialog">
+            <form id="edit_form" method="dialog"></form>
+        </dialog>
+
+        <dialog id="add_user_dialog">
+            <form d="add_user_form" method="dialog">
+                <div>
+                    <label for="username">Username</label>
+                    <input name="username"></input>
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input name="password" type="password"></input>
+                </div>
+                <div>
+                    <label for="admin">Admin?</label>
+                    <input name="admin" type="checkbox" value="1"></input>
+                </div>
+                <div>
+                    <button onclick="handleSubmitClick(this, 'model/api/users.php', 'POST')">Submit</button>
+                    <button type="button" onclick="document.getElementById('add_user_dialog').close()">Cancel</button>
         </dialog>
     </body>
 </html>
