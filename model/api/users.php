@@ -21,8 +21,11 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         $columns = substr($columns, 0, -2).")";
         $values = substr($values, 0, -2).")";
         $sql = "INSERT INTO ".User::table." $columns VALUES $values;";
-        if ($conn->exec($sql)) {
+        if ($conn->exec($sql) === false) {
+            http_response_code(500);
+        } else {
             http_response_code(201);
+
         }
         break;
     }

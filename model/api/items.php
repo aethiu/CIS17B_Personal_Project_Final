@@ -3,6 +3,28 @@ require_once('../Item.php');
 require_once('../../dbconnect.php');
 
 switch ($_SERVER["REQUEST_METHOD"]) {
+    case "POST": {
+        $columns = "(";
+        $values = "("; 
+        foreach($_POST as $key => $value) {
+            $column = htmlspecialchars($key);
+            $value = htmlspecialchars($value);
+
+            $columns .= "$column, ";
+            $values .= "'$value', ";
+        }
+        $columns = substr($columns, 0, -2).")";
+        $values = substr($values, 0, -2).")";
+        $sql = "INSERT INTO ".Item::table." $columns VALUES $values;";
+        if ($conn->exec($sql) === false) {
+            http_response_code(500);
+        } else {
+            http_response_code(201);
+            
+        }
+        break;
+    }
+
     case "PATCH": {
         $sql = "UPDATE ".Item::table." SET ";
 
@@ -44,6 +66,11 @@ switch ($_SERVER["REQUEST_METHOD"]) {
         break;
     }
 
+    case "DELETE": {
+        $sql = "DELETE FROM ".Item::table." WHERE sku=".htmlspecialchars($_GET["sku"].";");
+        echo $conn->exec($sql);
+        break;
+    }
 
     case "GET": {
         $sql = "SELECT * FROM ".Item::table;
