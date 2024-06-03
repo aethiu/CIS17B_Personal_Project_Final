@@ -10,10 +10,11 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             $column = htmlspecialchars($key);
             $value = htmlspecialchars($value);
 
-            if ($column == "password") {
+            if ($column === "password") {
                 $column = "passhash";
                 $value = password_hash($value, PASSWORD_DEFAULT);
             }
+            if ($column === "id") { continue; }
 
             $columns .= "$column, ";
             $values .= "'$value', ";

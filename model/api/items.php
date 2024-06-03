@@ -10,6 +10,8 @@ switch ($_SERVER["REQUEST_METHOD"]) {
             $column = htmlspecialchars($key);
             $value = htmlspecialchars($value);
 
+            if ($column === "sku") continue;
+
             $columns .= "$column, ";
             $values .= "'$value', ";
         }
