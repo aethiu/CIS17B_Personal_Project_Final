@@ -1,146 +1,119 @@
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const controller = new Controller();
 
-function useForm() {
-
-    const handleSubmit = (event) => {
-        const formData = new FormData(event.currentTarget);
-        let obj = {};
-        for (const entry of formData.entries()) {
-            obj[entry[0]] = entry[1];
-        }
-        onSubmit(obj, formData);
-    }
-
-    return [handleSubmit];
-}
-
-function AddItemForm({onSubmit=()=>{}, children}) {
-
+function FormDialog({onSubmit, onClose, children}) {
     return (
-<form onSubmit={onSubmit}>
-    <label htmlFor="name">
-        Name 
-        <input name="name"></input>
-    </label>
-    <label htmlFor="description">
-        Description
-        <input name="description"></input>
-    </label>
-    <label htmlFor="price">
-        Price
-        <input name="price"></input>
-    </label>
-    <label htmlFor="quantity">
-        Quantity
-        <input name="quantity"></input>
-    </label>
-    {children}
-</form>
-    );
-}
-
-
-function AddUserDialog({onSubmit=()=>{}, onClose=()=>{}}) {
-    const [formRef, handleSubmit] = useForm();
-    
-    const handleUserSubmit = (obj, formData) => {
-        const user = new User(null, obj.name, obj.password, obj.admin);
-        onSubmit(user, formData);
-    };
-
-    return (
-<dialog ref={dialogRef} className="user_dialog" onClose={onClose}>
-    <form ref={formRef} className="user_form" method="dialog">
-        <div>
-            <label htmlFor="admin">Admin?</label>
-            <input name="admin"></input>
-        </div>
-        <div>
-            <label htmlFor="username">Username</label>
-            <input name="username"></input>
-        </div>
-        <div>
-            <label htmlFor="password">Password</label>
-            <input name="password"></input>
-        </div>
-        <div>
-            <button formMethod="dialog" onClick={() => handleSubmit(handleUserSubmit)}>Submit</button>
-            <button formMethod="dialog" type="button" onClick={handleCancel}>Cancel</button>
-        </div>
+<>
+<ModalDialog onClose={onClose}>
+    <form onSubmit={onSubmit}>
+        {children}
+        <FormControls />
     </form>
-</dialog>
+</ModalDialog>
+</>
+    );
+}
+
+function FormControls() {
+    return (
+<div>
+    <button formMethod="dialog">Submit</button>
+    <button formMethod="dialog" value="cancel">Cancel</button>
+</div>
+    );
+}
+
+function AddItemFormInput() {
+    return (
+<>
+<label htmlFor="name">
+    Name 
+    <input name="name"></input>
+</label>
+<label htmlFor="description">
+    Description
+    <input name="description"></input>
+</label>
+<label htmlFor="price">
+    Price
+    <input name="price"></input>
+</label>
+<label htmlFor="quantity">
+    Quantity
+    <input name="quantity"></input>
+</label>
+</>
+    );
+}
+
+function AddUserFormInput() {
+    return (
+<>
+<label htmlFor="admin">
+    Admin?
+    <input name="admin"></input>
+</label>
+<label htmlFor="username">
+    Username
+    <input name="username"></input>
+</label>
+<label htmlFor="password">
+    Password
+    <input name="password"></input>
+</label>
+</>
     );
 }
 
 
-function EditUserDialog({user, onSubmit=()=>{}, onClose=()=>{}}) {
-    const [dialogRef, formRef, handleSubmit, handleCancel] = useForm();
-
-    const handleUserSubmit = (obj, formData) => { onSubmit(new User(obj.id, obj.username, obj.passhash, obj.admin), formData); };
+function EditUserFormInput({user}) {
 
 return (
-<dialog ref={dialogRef} className="user_dialog" onClose={onClose}>
-    <form ref={formRef} className="user_form" method="dialog">
-        <div>
-            <label htmlFor="id">ID</label>
-            <input name="id" value={user.id} readOnly></input>
-        </div>
-        <div>
-            <label htmlFor="admin">Admin?</label>
-            <input name="admin" defaultValue={user.admin}></input>
-        </div>
-        <div>
-            <label htmlFor="username">Username</label>
-            <input name="username" defaultValue={user.username} autoFocus></input>
-        </div>
-        <div>
-            <label htmlFor="passhash">Password Hash</label>
-            <input name="passhash" defaultValue={user.passhash}></input>
-        </div>
-        <div>
-            <button formMethod="dialog" onClick={() => handleSubmit(handleUserSubmit)}>Submit</button>
-            <button formMethod="dialog" type="button" onClick={handleCancel}>Cancel</button>
-        </div>
-    </form>
-</dialog>
+<>
+<label htmlFor="id">
+    ID
+    <input name="id" value={user.id} readOnly />
+</label>
+<label htmlFor="admin">
+    Admin?
+    <input name="admin" defaultValue={user.admin} />
+</label>
+<label htmlFor="username">
+    Username
+    <input name="username" defaultValue={user.username} autoFocus />
+</label>
+<label htmlFor="passhash">
+    Password Hash
+    <input name="passhash" defaultValue={user.passhash} />
+</label>
+</>
     );
 }
 
-function EditItemDialog({item, onSubmit=()=>{}, onClose=()=>{}}) {
-    const [dialogRef, formRef, handleSubmit, handleCancel] = useForm();
-
-    const handleItemSubmit = (obj, formData) => { onSubmit(new Item(obj.sku, obj.price, obj.quantity, obj.name, obj.description), formData); };
-
+function EditItemDialog({item}) {
     return (
-<dialog ref={dialogRef} className="edit_dialog" onClose={onClose}>
-    <form ref={formRef} className="edit_form" method="dialog">
-        <div>
-            <label htmlFor="sku">SKU</label>
-            <input name="sku" value={item.sku} readOnly></input>
-        </div>
-        <div>
-            <label htmlFor="price">Price</label>
-            <input name="price" defaultValue={item.price}></input>
-        </div>
-        <div>
-            <label htmlFor="quantity">Stock</label>
-            <input name="quantity" defaultValue={item.quantity} autoFocus></input>
-        </div>
-        <div>
-            <label htmlFor="Name">Name</label>
-            <input name="name" defaultValue={item.name}></input>
-        </div>
-        <div>
-            <label htmlFor="description">Description</label>
-            <input name="description" defaultValue={item.description}></input>
-        </div>
-        <div>
-            <button formMethod="dialog" onClick={() => handleSubmit(handleItemSubmit)}>Submit</button>
-            <button formMethod="dialog" type="button" onClick={handleCancel}>Cancel</button>
-        </div>
-    </form>
-</dialog>
+<>
+<label htmlFor="sku">
+    SKU
+    <input name="sku" value={item.sku} readOnly />
+</label>
+<label htmlFor="price">
+    Price
+    <input name="price" defaultValue={item.price} />
+</label>
+<label htmlFor="quantity">
+    Stock
+    <input name="quantity" defaultValue={item.quantity} autoFocus />
+</label>
+<label htmlFor="Name">
+    Name
+    <input name="name" defaultValue={item.name} />
+</label>
+<label htmlFor="description">
+    Description
+    <input name="description" defaultValue={item.description} />
+</label>
+</>
     );
 }
 
@@ -235,14 +208,14 @@ function AdminItemPanel({fetchCreate, fetchRead, fetchUpdate, fetchDelete}) {
 
     const updateObjs = async () => {
         // TODO Paginate
-        setObjs(await fetchCreate);
+        setObjs(await fetchRead());
     }
 
     const handleEditOpen = (item) => {
         setEditingObj(item);
         setShowEditDialog(true);
     }
-
+    const handleEditClose = () => { setShowEditDialog(false); }
     const handleAddClick = () => { setShowAddDialog(true); }
     const handleAddClose = () => { setShowAddDialog(false); }
 
@@ -255,9 +228,7 @@ function AdminItemPanel({fetchCreate, fetchRead, fetchUpdate, fetchDelete}) {
     }
 
     const handleAddSubmit = async (event) => {
-        if (event.nativeEvent.submitter.value === "cancel") {
-            return;
-        }
+        if (event.nativeEvent.submitter.value === "cancel") { return; }
 
         const formData = new FormData(event.currentTarget);
         if (formData.entries()) {
@@ -271,19 +242,20 @@ function AdminItemPanel({fetchCreate, fetchRead, fetchUpdate, fetchDelete}) {
     return (
 <>
 <h2>Items</h2>
-<button type="button" onClick={handleAddClick}>Add Item</button>
-{/* <ItemTable items={objs} onEdit={handleEditOpen} onDelete={handleDeleteClick}/> */}
 
-{showEditDialog && <EditItemDialog item={editingObj} onSubmit={handleEditSubmit}/>}
+<button type="button" onClick={handleAddClick}>Add Item</button>
+
+<ItemTable items={objs} onEdit={handleEditOpen} onDelete={handleDeleteClick}/>
+
+{showEditDialog && 
+<FormDialog onSubmit={handleEditSubmit} onClose={handleEditClose}>
+    <EditItemDialog item={editingObj}/>
+</FormDialog>}
+
 {showAddDialog && 
-<ModalDialog onClose={handleAddClose}>
-    <AddItemForm onSubmit={handleAddSubmit}>
-        <div>
-            <button formMethod="dialog">Submit</button>
-            <button formMethod="dialog" value="cancel">Cancel</button>
-        </div>
-    </AddItemForm>
-</ModalDialog>}
+<FormDialog onSumbit={handleAddSubmit} onClose={handleAddClose}>
+    <AddItemFormInput />
+</FormDialog>}
 </>
     );            
 }
@@ -308,7 +280,7 @@ function AdminPanel() {
         setUsers(users);
     }
 
-    const handleUserClose = () => setShowUserEditDialog(false);
+    const handleEditUserClose = () => setShowUserEditDialog(false);
 
     const handleEditUserOpen = (user) => {
         setEditingUser(user);
@@ -349,11 +321,14 @@ function AdminPanel() {
     <button type="button" onClick={handleAddUserClick}>Add User</button>
     <UserTable users={users} onEdit={handleEditUserOpen} onDelete={handleUserDelete}/>
 
-    {showUserEditDialog && <EditUserDialog user={editingUser} onSubmit={handleEditUserSubmit} onClose={handleUserClose}/>}
+    {showUserEditDialog && 
+    <FormDialog onSubmit={()=>{}} onClose={handleEditUserClose}>
+        <EditUserFormInput user={editingUser} />
+    </FormDialog>}
     {showUserAddDialog && 
-    <ModalDialog className="item_dialog">
-        <AddUserDialog onSubmit={handleAddUserSubmit} onClose={handleAddUserClose}/>
-    </ModalDialog>}
+    <FormDialog onSubmit={()=>{}} onClose={handleAddUserClose}>
+        <AddUserFormInputs />
+    </FormDialog>}
 </>
     );
 }
@@ -361,7 +336,7 @@ function AdminPanel() {
 root.render(
 <>
     <Navigation />
-    {/* <AdminPanel /> */}
-    <AdminItemPanel fetchRead={async () => await Item.prototype.getItems()}/>
+    <AdminPanel />
+    <AdminItemPanel fetchRead={async () => await Item.prototype.getItems()} />
 </>
 );
