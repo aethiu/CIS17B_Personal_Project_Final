@@ -4,6 +4,7 @@ function ModalDialog({onClose=()=>{}, children}) {
     React.useEffect(() => {
         const dialog = ref.current;
         dialog.showModal();
+        return () => dialog.close();
     });
 
     return (
