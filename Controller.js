@@ -25,7 +25,7 @@ Controller.prototype.createItem = async function (item) {
     if (item instanceof FormData) {
         formData = item;
     } else {
-        formData = new FormData;
+        formData = new FormData();
         formData.append("price", item.price);
         formData.append("quantity", item.quantity);
         formData.append("name", item.name);
@@ -39,14 +39,14 @@ Controller.prototype.createItem = async function (item) {
 }
 
 Controller.prototype.deleteItem = async function (item) {
-    const response = await fetch(item.api_uri+"?sku="+item.sku, {
+    const response = await fetch(item.api_uri+"?id="+item.id, {
         method: "DELETE"
     });
     return response;
 }
 
 Controller.prototype.updateUser = async function (user) {
-    const response = await fetch(user.api_uri+"?sku="+user.sku, {
+    const response = await fetch(user.api_uri+"?id="+user.id, {
         method: "PATCH",
         body: JSON.stringify(user)
     });
@@ -54,11 +54,15 @@ Controller.prototype.updateUser = async function (user) {
 }
 
 Controller.prototype.createUser = async function (user) {
-    const formData = new FormData();
-    formData.append("username", user.username);
-    formData.append("password", user.passhash);
-    formData.append("admin", user.admin);
-    const response = await fetch(user.api_uri, {
+    let formData;
+    if (user instanceof FormData) {
+        formData = user;
+    } else {
+        formData.append("username", user.username);
+        formData.append("password", user.passhash);
+        formData.append("admin", user.admin);
+    }
+    const response = await fetch(User.prototype.api_uri, {
         method: "POST",
         body: formData
     })
@@ -66,7 +70,7 @@ Controller.prototype.createUser = async function (user) {
 }
 
 Controller.prototype.deleteUser = async function (user) {
-    const response = await fetch(user.api_uri+"?sku="+user.sku, {
+    const response = await fetch(user.api_uri+"?id="+user.id, {
         method: "DELETE"
     });
     return response;

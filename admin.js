@@ -2,10 +2,17 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 const controller = new Controller();
 
 function FormDialog({onSubmit, onClose, children}) {
+    
+    const handleSubmit = (event) => {
+        if (event.nativeEvent.submitter.value === "cancel") { return; }
+        const formData = new FormData(event.currentTarget);
+        onSubmit(formData);
+    }
+
     return (
 <>
 <ModalDialog onClose={onClose}>
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit}>
         {children}
         <FormControls />
     </form>
@@ -14,16 +21,16 @@ function FormDialog({onSubmit, onClose, children}) {
     );
 }
 
-function FormControls() {
+function FormControls({cancelValue="cancel"}) {
     return (
 <div>
     <button formMethod="dialog">Submit</button>
-    <button formMethod="dialog" value="cancel">Cancel</button>
+    <button formMethod="dialog" value={cancelValue}>Cancel</button>
 </div>
     );
 }
 
-function AddItemFormInput() {
+function AddItemInputs() {
     return (
 <>
 <label htmlFor="name">
@@ -36,17 +43,17 @@ function AddItemFormInput() {
 </label>
 <label htmlFor="price">
     Price
-    <input name="price"></input>
+    <ItemPriceInput name="price" />
 </label>
 <label htmlFor="quantity">
-    Quantity
-    <input name="quantity"></input>
+    Quantity    
+    <ItemQuantityInput name="quantity"/>
 </label>
 </>
     );
 }
 
-function AddUserFormInput() {
+function AddUserInputs() {
     return (
 <>
 <label htmlFor="admin">
@@ -65,8 +72,7 @@ function AddUserFormInput() {
     );
 }
 
-
-function EditUserFormInput({user}) {
+function EditUserInputs({user}) {
 
 return (
 <>
@@ -76,7 +82,7 @@ return (
 </label>
 <label htmlFor="admin">
     Admin?
-    <input name="admin" defaultValue={user.admin} />
+    <UserAdminCheckbox name="admin" defaultChecked={user.admin} />
 </label>
 <label htmlFor="username">
     Username
@@ -90,7 +96,7 @@ return (
     );
 }
 
-function EditItemDialog({item}) {
+function EditItemInputs({item}) {
     return (
 <>
 <label htmlFor="sku">
@@ -99,11 +105,11 @@ function EditItemDialog({item}) {
 </label>
 <label htmlFor="price">
     Price
-    <input name="price" defaultValue={item.price} />
+    <ItemPriceInput name="price" defaultValue={item.price}/>
 </label>
-<label htmlFor="quantity">
-    Stock
-    <input name="quantity" defaultValue={item.quantity} autoFocus />
+<label>
+    Quantity
+    <ItemQuantityInput name="quantity" defaultValue={item.quantity}/>
 </label>
 <label htmlFor="Name">
     Name
@@ -117,7 +123,27 @@ function EditItemDialog({item}) {
     );
 }
 
-function UserTable({users, onEdit=()=>{}, onDelete=()=>{}}) {
+function ItemPriceInput({name, defaultValue}) {
+    return ( <input name={name} defaultValue={defaultValue} inputMode="decimal" pattern="\d*(\.|,)?\d*"/> );
+}
+
+function ItemQuantityInput({name, defaultValue}) {
+    return ( <input name={name} defaultValue={defaultValue} inputMode="numeric" pattern="\d*" autoFocus /> );
+}
+
+function UserAdminCheckbox({name, defaultChecked}) {
+    return ( <input name={name} defaultChecked={defaultChecked} type="checkbox" value="1"/> );
+}
+
+function UserTable({users, onEditSubmit, onDelete}) {
+    const [showEditDialog, setShowEditDialog] = React.useState(false);
+    const [editingUser, setEditingUser] = React.useState(null);
+
+    const handleEditClick = (user) => {
+        setEditingUser(user);
+        setShowEditDialog(true);
+    };
+
     const rows = (users.map((user) => 
     <tr key={user.id}>
         <td>{user.id}</td>
@@ -126,7 +152,7 @@ function UserTable({users, onEdit=()=>{}, onDelete=()=>{}}) {
         <td>{user.passhash}</td>
         <td>
             <div className="user_table_actions">
-                <button onClick={() => {onEdit(user)}}>Edit</button>
+                <button onClick={() => {handleEditClick(user)}}>Edit</button>
                 <button onClick={() => {onDelete(user)}}>Delete</button>
             </div>
         </td>
@@ -134,7 +160,7 @@ function UserTable({users, onEdit=()=>{}, onDelete=()=>{}}) {
     ));
 
     return (
-<div className="user_table">
+<>
 <table>
     <thead>
         <tr>
@@ -148,11 +174,24 @@ function UserTable({users, onEdit=()=>{}, onDelete=()=>{}}) {
         {rows}
     </tbody>
 </table>
-</div>
+
+{showEditDialog && 
+<FormDialog onSubmit={onEditSubmit} onClose={() => setShowEditDialog(false)}>
+    <EditUserInputs user={editingUser} />
+</FormDialog>}
+</>
     );
 }
 
-function ItemTable({items, onEdit=()=>{}, onDelete=()=>{}}) {
+function ItemTable({items, onEditSubmit=(formData)=>{}, onDelete=(item)=>{}}) {
+    const [showEditDialog, setShowEditDialog] = React.useState(false);
+    const [editingItem, setEditingItem] = React.useState(null);
+
+    const handleEditClick = (item) => {
+        setEditingItem(item);
+        setShowEditDialog(true);
+    }
+
     const rows = (items.map((item) => 
     <tr key={item.sku}>
         <td>{item.sku}</td>
@@ -162,7 +201,7 @@ function ItemTable({items, onEdit=()=>{}, onDelete=()=>{}}) {
         <td>{item.description}</td>
         <td>
             <div className="item_table_actions">
-                <button onClick={() => {onEdit(item)}}>Edit</button>
+                <button onClick={() => handleEditClick(item)}>Edit</button>
                 <button onClick={() => {onDelete(item)}}>Delete</button>
             </div>
         </td>
@@ -188,147 +227,104 @@ function ItemTable({items, onEdit=()=>{}, onDelete=()=>{}}) {
     </tbody>
 </table>
 </div>
+
+{showEditDialog && 
+<FormDialog onSubmit={onEditSubmit} onClose={() => setShowEditDialog(false)}>
+    <EditItemInputs item={editingItem} />
+</FormDialog>}
 </>
     );
 }
 
-function AdminItemPanel({fetchCreate, fetchRead, fetchUpdate, fetchDelete}) {
-    const [showAddDialog, setShowAddDialog] = React.useState(false);
-    const [showEditDialog, setShowEditDialog] = React.useState(false);
+function useRemoteTableData(fetchFunc) {
     const [objs, setObjs] = React.useState([]);
-    const [editingObj, setEditingObj]= React.useState(null);
+
+    const updateObjs = async () => { setObjs(await fetchFunc()); };
 
     React.useEffect(() => {
         let ignore = false;
-        if (!ignore) { 
+        if (!ignore) {
             updateObjs();
         }
-        return () => { ignore = true; };
+        return () => ignore = true;
     }, []);
+    return [objs, updateObjs];
+}
 
-    const updateObjs = async () => {
-        // TODO Paginate
-        setObjs(await fetchRead());
-    }
+function AdminItemPanel() {
+    const [showAddDialog, setShowAddDialog] = React.useState(false);
+    const [objs, updateObjs] = useRemoteTableData(Item.prototype.getItems);
 
-    const handleEditOpen = (item) => {
-        setEditingObj(item);
-        setShowEditDialog(true);
-    }
-    const handleEditClose = () => { setShowEditDialog(false); }
     const handleAddClick = () => { setShowAddDialog(true); }
     const handleAddClose = () => { setShowAddDialog(false); }
 
-    const handleEditSubmit = async (obj) => {
-        await fetchUpdate(obj).then(response => { if (response.ok) updateObjs(); });
+    const handleEditSubmit = async (formData) => {
+        await controller.updateItem({
+            __proto__: Item.prototype,
+            sku: formData.get("sku"),
+            price: formData.get("price"),
+            quantity: formData.get("quantity"),
+            name: formData.get("name"),
+            description: formData.get("description")
+        }).then(response => { if (response.ok) updateObjs();  });
     }
 
-    const handleDeleteClick = async (obj) => {
-        await fetchDelete(obj).then(response => {  if (response.ok) updateObjs(); });
+    const handleDeleteObj= async (item) => {
+        await controller.deleteItem(item).then(response => { if (response.ok) updateObjs();  });
     }
 
-    const handleAddSubmit = async (event) => {
-        if (event.nativeEvent.submitter.value === "cancel") { return; }
-
-        const formData = new FormData(event.currentTarget);
-        if (formData.entries()) {
-            for (const prop of formData.entries()) {
-                console.log(prop);
-            }
-            // await fetchCreate(obj, formData).then(response => { if (response.ok) updateObjs(); });
-        }
+    const handleAddSubmit = async (formData) => {
+        await controller.createItem(formData).then(response => { if (response.ok) updateObjs(); });
     }
 
     return (
 <>
-<h2>Items</h2>
-
 <button type="button" onClick={handleAddClick}>Add Item</button>
-
-<ItemTable items={objs} onEdit={handleEditOpen} onDelete={handleDeleteClick}/>
-
-{showEditDialog && 
-<FormDialog onSubmit={handleEditSubmit} onClose={handleEditClose}>
-    <EditItemDialog item={editingObj}/>
-</FormDialog>}
-
 {showAddDialog && 
-<FormDialog onSumbit={handleAddSubmit} onClose={handleAddClose}>
-    <AddItemFormInput />
+<FormDialog onSubmit={handleAddSubmit} onClose={handleAddClose}>
+    <AddItemInputs />
 </FormDialog>}
+
+<ItemTable items={objs} onEditSubmit={handleEditSubmit} onDelete={handleDeleteObj} />
 </>
     );            
 }
 
-function AdminPanel() {
+function AdminUserPanel() {
     const [showUserAddDialog, setShowUserAddDialog] = React.useState(false);
-    const [showUserEditDialog, setShowUserEditDialog] = React.useState(false);
-    const [users, setUsers] = React.useState([]);
-    const [editingUser, setEditingUser]= React.useState(null);
+    const [users, updateUsers] = useRemoteTableData(User.prototype.getUsers);
 
-    React.useEffect(() => {
-        let ignore = false;
-        if (!ignore) { 
-            updateUsers();
-        }
-        return () => { ignore = true; };
-    }, []);
+    const handleAddClick = () => { setShowUserAddDialog(true); }
+    const handleAddClose = () => { setShowUserAddDialog(false); }
 
-    const updateUsers = async () => {
-        // TODO Paginate
-        const users = await (await fetch('model/api/users.php')).json(); 
-        setUsers(users);
+    const handleEditSubmit = async (formData) => {
+        await controller.updateUser({
+            __proto__: User.prototype,
+            id: formData.get("id"),
+            admin: formData.get("admin") ?? "0",
+            username: formData.get("username"),
+            passhash: formData.get("passhash")
+        }).then(response => { if (response.ok) updateUsers(); });
     }
 
-    const handleEditUserClose = () => setShowUserEditDialog(false);
-
-    const handleEditUserOpen = (user) => {
-        setEditingUser(user);
-        setShowUserEditDialog(true);
-    }
-    const handleEditUserSubmit = async (user) => {
-        await fetch("model/api/users.php?id="+user.id, {
-            method: "PATCH",
-            body: JSON.stringify(user)
-        }).then(response => { 
-                if (response.status <= 200 && response.status < 300) updateUsers();
-            }
-        );
-    }
-    const handleUserDelete = async (user) => {
-        await fetch("model/api/users.php?id="+user.id, { method: "DELETE" })
-            .then(response => { 
-                    if (response.status <= 200 && response.status < 300) updateUsers();
-                }
-            );
+    const handleDelete = async (user) => {
+        await controller.deleteUser(user).then(response => { if (response.ok) updateUsers(); })
     }
 
-    const handleAddUserSubmit = async (user, formData) => {
-        controller.createUser(user)
-            .then(response => {
-                if (response.status <= 200 && response.status < 300) updateUsers();
-            });
+    const handleAddSubmit = async (formData) => {
+        controller.createUser(formData).then(response => { if (response.ok) updateUsers(); });
     }
-
-    const handleAddUserClick = () => { setShowUserAddDialog(true); }
-    const handleAddUserClose = () => { setShowUserAddDialog(false); }
 
 
     return(
 <>
+<button type="button" onClick={handleAddClick}>Add User</button>
+<UserTable users={users} onEditSubmit={handleEditSubmit} onDelete={handleDelete}/>
 
-    <h2>Users</h2>
-    <button type="button" onClick={handleAddUserClick}>Add User</button>
-    <UserTable users={users} onEdit={handleEditUserOpen} onDelete={handleUserDelete}/>
-
-    {showUserEditDialog && 
-    <FormDialog onSubmit={()=>{}} onClose={handleEditUserClose}>
-        <EditUserFormInput user={editingUser} />
-    </FormDialog>}
-    {showUserAddDialog && 
-    <FormDialog onSubmit={()=>{}} onClose={handleAddUserClose}>
-        <AddUserFormInputs />
-    </FormDialog>}
+{showUserAddDialog && 
+<FormDialog onSubmit={handleAddSubmit} onClose={handleAddClose}>
+    <AddUserInputs />
+</FormDialog>}
 </>
     );
 }
@@ -336,7 +332,11 @@ function AdminPanel() {
 root.render(
 <>
     <Navigation />
-    <AdminPanel />
-    <AdminItemPanel fetchRead={async () => await Item.prototype.getItems()} />
+
+    <h2>Users</h2>
+    <AdminUserPanel />
+
+    <h2>Items</h2>
+    <AdminItemPanel />
 </>
 );
