@@ -21,12 +21,17 @@ Controller.prototype.updateItem = async function (item) {
 }
 
 Controller.prototype.createItem = async function (item) {
-    const formData = new FormData();
-    formData.append("price", item.price);
-    formData.append("quantity", item.quantity);
-    formData.append("name", item.name);
-    formData.append("description", item.description);
-    const response = await fetch(item.api_uri, {
+    let formData;
+    if (item instanceof FormData) {
+        formData = item;
+    } else {
+        formData = new FormData;
+        formData.append("price", item.price);
+        formData.append("quantity", item.quantity);
+        formData.append("name", item.name);
+        formData.append("description", item.description);
+    }
+    const response = await fetch(Item.prototype.api_uri, {
         method: "POST",
         body: formData 
     })

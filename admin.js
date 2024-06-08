@@ -1,71 +1,48 @@
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const controller = new Controller();
 
-function useFormDialog() {
-    const dialogRef = React.useRef(null);
-    const formRef = React.useRef(null);
+function useForm() {
 
-    React.useEffect(() => {
-        const dialog = dialogRef.current;
-        dialog.showModal();
-    });
-
-    const handleSubmit = (onSubmit) => {
-        const dialog = dialogRef.current;
-        const formData = new FormData(formRef.current);
+    const handleSubmit = (event) => {
+        const formData = new FormData(event.currentTarget);
         let obj = {};
         for (const entry of formData.entries()) {
             obj[entry[0]] = entry[1];
         }
         onSubmit(obj, formData);
-        dialog.close();        
     }
 
-    const handleCancel = () => dialogRef.current.close();
-
-    return [dialogRef, formRef, handleSubmit, handleCancel];
+    return [handleSubmit];
 }
 
-function AddItemDialog({onSubmit=()=>{}, onClose=()=>{}}) {
-    const [dialogRef, formRef, handleSubmit, handleCancel] = useFormDialog();
-
-
-    const handleItemSubmit = (obj, formData) => {
-        const item = new Item(null, obj.price, obj.quantity, obj.name, obj.description);
-        onSubmit(item, formData);
-    }
+function AddItemForm({onSubmit=()=>{}, children}) {
 
     return (
-<dialog ref={dialogRef} className="item_dialog" onClose={onClose}>
-    <form ref={formRef} className="item_form" method="dialog">
-        <div>
-            <label htmlFor="name">Name</label>
-            <input name="name"></input>
-        </div>
-        <div>
-            <label htmlFor="description">Description</label>
-            <input name="description"></input>
-        </div>
-        <div>
-            <label htmlFor="price">Price</label>
-            <input name="price"></input>
-        </div>
-        <div>
-            <label htmlFor="quantity">Quantity</label>
-            <input name="quantity"></input>
-        </div>
-        <div>
-            <button formMethod="dialog" onClick={() => handleSubmit(handleItemSubmit)}>Submit</button>
-            <button formMethod="dialog" type="button" onClick={handleCancel}>Cancel</button>
-        </div>
-    </form>
-</dialog>
+<form onSubmit={onSubmit}>
+    <label htmlFor="name">
+        Name 
+        <input name="name"></input>
+    </label>
+    <label htmlFor="description">
+        Description
+        <input name="description"></input>
+    </label>
+    <label htmlFor="price">
+        Price
+        <input name="price"></input>
+    </label>
+    <label htmlFor="quantity">
+        Quantity
+        <input name="quantity"></input>
+    </label>
+    {children}
+</form>
     );
 }
 
 
 function AddUserDialog({onSubmit=()=>{}, onClose=()=>{}}) {
-    const [dialogRef, formRef, handleSubmit, handleCancel] = useFormDialog();
+    const [formRef, handleSubmit] = useForm();
     
     const handleUserSubmit = (obj, formData) => {
         const user = new User(null, obj.name, obj.password, obj.admin);
@@ -98,7 +75,7 @@ function AddUserDialog({onSubmit=()=>{}, onClose=()=>{}}) {
 
 
 function EditUserDialog({user, onSubmit=()=>{}, onClose=()=>{}}) {
-    const [dialogRef, formRef, handleSubmit, handleCancel] = useFormDialog();
+    const [dialogRef, formRef, handleSubmit, handleCancel] = useForm();
 
     const handleUserSubmit = (obj, formData) => { onSubmit(new User(obj.id, obj.username, obj.passhash, obj.admin), formData); };
 
@@ -131,7 +108,7 @@ return (
 }
 
 function EditItemDialog({item, onSubmit=()=>{}, onClose=()=>{}}) {
-    const [dialogRef, formRef, handleSubmit, handleCancel] = useFormDialog();
+    const [dialogRef, formRef, handleSubmit, handleCancel] = useForm();
 
     const handleItemSubmit = (obj, formData) => { onSubmit(new Item(obj.sku, obj.price, obj.quantity, obj.name, obj.description), formData); };
 
@@ -242,62 +219,71 @@ function ItemTable({items, onEdit=()=>{}, onDelete=()=>{}}) {
     );
 }
 
-function AdminItemPanel() {
-    const [showItemAddDialog, setShowItemAddDialog] = React.useState(false);
-    const [showItemEditDialog, setShowItemEditDialog] = React.useState(false);
-    const [items, setItems] = React.useState([]);
-    const [editingItem, setEditingItem]= React.useState(null);
+function AdminItemPanel({fetchCreate, fetchRead, fetchUpdate, fetchDelete}) {
+    const [showAddDialog, setShowAddDialog] = React.useState(false);
+    const [showEditDialog, setShowEditDialog] = React.useState(false);
+    const [objs, setObjs] = React.useState([]);
+    const [editingObj, setEditingObj]= React.useState(null);
 
     React.useEffect(() => {
         let ignore = false;
         if (!ignore) { 
-            updateItems();
+            updateObjs();
         }
         return () => { ignore = true; };
     }, []);
 
-    const updateItems = async () => {
+    const updateObjs = async () => {
         // TODO Paginate
-        setItems(await Item.prototype.getItems());
+        setObjs(await fetchCreate);
     }
 
-    const handleItemClose = () => setShowItemEditDialog(false);
-
-    const handleEditItemOpen = (item) => {
-        setEditingItem(item);
-        setShowItemEditDialog(true);
+    const handleEditOpen = (item) => {
+        setEditingObj(item);
+        setShowEditDialog(true);
     }
 
-    const handleEditItemSubmit = async (item) => {
-        await controller.updateItem(item)
-            .then(response => { 
-                    if (response.ok) updateItems();
-            });
+    const handleAddClick = () => { setShowAddDialog(true); }
+    const handleAddClose = () => { setShowAddDialog(false); }
+
+    const handleEditSubmit = async (obj) => {
+        await fetchUpdate(obj).then(response => { if (response.ok) updateObjs(); });
     }
 
-    const handleItemDelete = async (item) => {
-        await controller.deleteItem(item)
-            .then(response => { 
-                    if (response.ok) updateItems();
-            });
+    const handleDeleteClick = async (obj) => {
+        await fetchDelete(obj).then(response => {  if (response.ok) updateObjs(); });
     }
 
-    const handleAddItemSubmit = async (item, formData) => {
-        controller.createItem(item)
-            .then(response => { if (response.ok) updateItems(); });
-    }
+    const handleAddSubmit = async (event) => {
+        if (event.nativeEvent.submitter.value === "cancel") {
+            return;
+        }
 
-    const handleAddItemClick = () => { setShowItemAddDialog(true); }
-    const handleAddItemClose = () => { setShowItemAddDialog(false); }
+        const formData = new FormData(event.currentTarget);
+        if (formData.entries()) {
+            for (const prop of formData.entries()) {
+                console.log(prop);
+            }
+            // await fetchCreate(obj, formData).then(response => { if (response.ok) updateObjs(); });
+        }
+    }
 
     return (
 <>
 <h2>Items</h2>
-<button type="button" onClick={handleAddItemClick}>Add Item</button>
-<ItemTable items={items} onEdit={handleEditItemOpen} onDelete={handleItemDelete}/>
+<button type="button" onClick={handleAddClick}>Add Item</button>
+{/* <ItemTable items={objs} onEdit={handleEditOpen} onDelete={handleDeleteClick}/> */}
 
-{showItemEditDialog && <EditItemDialog item={editingItem} onSubmit={handleEditItemSubmit} onClose={handleItemClose}/>}
-{showItemAddDialog && <AddItemDialog onSubmit={handleAddItemSubmit} onClose={handleAddItemClose}/>}
+{showEditDialog && <EditItemDialog item={editingObj} onSubmit={handleEditSubmit}/>}
+{showAddDialog && 
+<ModalDialog onClose={handleAddClose}>
+    <AddItemForm onSubmit={handleAddSubmit}>
+        <div>
+            <button formMethod="dialog">Submit</button>
+            <button formMethod="dialog" value="cancel">Cancel</button>
+        </div>
+    </AddItemForm>
+</ModalDialog>}
 </>
     );            
 }
@@ -364,9 +350,10 @@ function AdminPanel() {
     <UserTable users={users} onEdit={handleEditUserOpen} onDelete={handleUserDelete}/>
 
     {showUserEditDialog && <EditUserDialog user={editingUser} onSubmit={handleEditUserSubmit} onClose={handleUserClose}/>}
-    {showUserAddDialog && <AddUserDialog onSubmit={handleAddUserSubmit} onClose={handleAddUserClose}/>}
-
-    <AdminItemPanel />
+    {showUserAddDialog && 
+    <ModalDialog className="item_dialog">
+        <AddUserDialog onSubmit={handleAddUserSubmit} onClose={handleAddUserClose}/>
+    </ModalDialog>}
 </>
     );
 }
@@ -374,6 +361,7 @@ function AdminPanel() {
 root.render(
 <>
     <Navigation />
-    <AdminPanel />
+    {/* <AdminPanel /> */}
+    <AdminItemPanel fetchRead={async () => await Item.prototype.getItems()}/>
 </>
 );
