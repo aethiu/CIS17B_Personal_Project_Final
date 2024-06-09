@@ -236,6 +236,43 @@ function ItemTable({items, onEditSubmit=(formData)=>{}, onDelete=(item)=>{}}) {
     );
 }
 
+function OrderTable({orders}) {
+    const rows = (orders.map((order) => 
+    <tr key={order.number}>
+        <td>{order.number}</td>
+        <td>{order.user_id}</td>
+        <td>{order.date}</td>
+        <td>{order.subtotal}</td>
+        <td>{order.shipping}</td>
+        <td>{order.tax}</td>
+        <td>{order.total}</td>
+    </tr>
+    ));
+
+    return (
+<>
+<div className="order_table">
+<table>
+    <thead>
+        <tr>
+            <th>Order #</th>
+            <th>User ID</th>
+            <th>Purchase Date</th>
+            <th>Subtotal</th>
+            <th>Shipping</th>
+            <th>Tax</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {rows}
+    </tbody>
+</table>
+</div>
+</>
+    );
+}
+
 function useRemoteTableData(fetchFunc) {
     const [objs, setObjs] = React.useState([]);
 
@@ -329,6 +366,36 @@ function AdminUserPanel() {
     );
 }
 
+function AdminOrderPanel() {
+    const [orders, setOrders] = React.useState([]);
+
+    React.useEffect(() => {
+        let ignore = false;
+
+        async function fetchOrders() {
+            await fetch("model/api/order.php", { method: "GET" })
+            .then(async response => { 
+                if (response.ok) {
+                     return await response.json() 
+                }
+            }).then(orders => {
+                if (!ignore) { 
+                    setOrders(orders); 
+                }
+            });
+        }
+        fetchOrders();
+
+        return () => ignore = true;
+    }, []);
+
+    return (
+<>
+    <OrderTable orders={orders}/>
+</>
+    );
+}
+
 root.render(
 <>
     <Navigation />
@@ -338,5 +405,8 @@ root.render(
 
     <h2>Items</h2>
     <AdminItemPanel />
+
+    <h2>Orders</h2>
+    <AdminOrderPanel />
 </>
 );
