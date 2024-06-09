@@ -2,13 +2,13 @@ function Controller() {
     this.cart = new PersistentCart();
 }
 
-Controller.prototype.add_to_cart = function (item) {
+Controller.prototype.addToCart = function (item) {
     if (item.quantity > this.cart.get_quantity(item.sku)) {
         this.cart.add_item(item.sku);
     }
 };
 
-Controller.prototype.clear_cart = function () {
+Controller.prototype.clearCart = function () {
     this.cart.items.clear();
 }
 
