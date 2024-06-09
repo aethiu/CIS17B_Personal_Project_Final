@@ -17,6 +17,5 @@
     <body>
         <div id="items_container"></div>
         <div id="order_details"></div>
-        <button type="button">Submit order</button>
     </body>
 </html>

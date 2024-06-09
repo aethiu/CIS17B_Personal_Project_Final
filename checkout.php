@@ -1,4 +1,9 @@
 <?php
+session_start();
+
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php");
+}
 
 ?>
 <!DOCTYPE html>
@@ -12,11 +17,11 @@
         <script type="text/babel" src="Cart.js"></script>
         <script type="text/babel" src="Controller.js"></script>
         <script type="text/babel" data-presets="react" src="components/Navigation.js"></script>
-        <script type="text/babel" data-presets="react" src="cart_view.js"></script>
+        <script type="text/babel" data-presets="react" src="checkout.js"></script>
         <meta charset="UTF-8">
         <title>Checkout</title>
     </head>
     <body>
-        
+        <div id="root"></div>
     </body>
 </html>

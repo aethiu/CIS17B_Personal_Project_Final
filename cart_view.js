@@ -15,7 +15,7 @@ function CartItemList({cart}) {
         let items = [];
         async function fillCartItems() {
             for (let [sku, quantity] of cart.items) {
-                let item = await getItem(sku);
+                let item = await Item.prototype.getItem(sku);
                 items.push(<CartItem key={item.sku} item={item} quantity={quantity} />);
             }
             if (!ignore) {
@@ -34,9 +34,25 @@ function CartItemList({cart}) {
     );
 }
 
+function Cart() {
+    const handleSubmitClick = async () => {
+        await fetch("model/api/checkout.php", { 
+            method: "POST",
+            body: JSON.stringify({cart: Object.fromEntries(controller.cart.items)})
+        }).then(response => { if (response.ok) location.assign("checkout.php"); });
+    };
+
+    return(
+<>
+    <CartItemList cart={controller.cart} />
+    <button type="button" onClick={handleSubmitClick}>Submit order</button>
+</>
+    );
+}
+
 root.render(
-    <>
-        <Navigation />
-        <CartItemList cart={controller.cart}></CartItemList>
-    </>
+<>
+    <Navigation />
+    <Cart />
+</>
 );
