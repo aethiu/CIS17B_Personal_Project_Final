@@ -3,7 +3,7 @@ function Cart(items = new Map()) {
 };
 
 Cart.prototype.get_quantity = function (sku) {
-    return this.items.has(sku) ? this.items.get(sku) : 0;
+    return this.items?.get(sku) ?? 0;
 };
 
 Cart.prototype.add_item = function (sku) {
@@ -28,17 +28,15 @@ Cart.prototype.num_items = function () {
 
 class PersistentCart extends Cart {
     constructor() {
-        const cart_cookie_name = "cart";
-        const cart_count_cookie_name = "cart_count";
+        const cookieName = "cart";
 
-        if (localStorage.getItem(cart_cookie_name)) {
-            super(new Map(Object.entries(JSON.parse(localStorage.getItem(cart_cookie_name)))));
+        if (localStorage.getItem(cookieName)) {
+            super(new Map(Object.entries(JSON.parse(localStorage.getItem(cookieName)))));
         } else {
             super();
         }
 
-        this.cart_cookie_name = cart_cookie_name;
-        this.cart_count_cookie_name = cart_count_cookie_name
+        this.cookieName = cookieName;
     }
 
 
@@ -53,7 +51,6 @@ class PersistentCart extends Cart {
     }
 
     update_localStorage() {
-        localStorage.setItem(this.cart_count_cookie_name, this.num_items());
-        localStorage.setItem(this.cart_cookie_name, JSON.stringify(Object.fromEntries(this.items.entries())));
+        localStorage.setItem(this.cookieName, JSON.stringify(Object.fromEntries(this.items.entries())));
     }
 };
